@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d9488" />
+  <meta name="description" content="Anwar-Ul Islam Model College, Agege – Official Digital School Platform. Learn • Grow • Excel" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AIMC Portal" />
+  <title>Anwar-Ul Islam Model College | Digital Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            school: {
+              teal: '#0d9488',
+              tealDark: '#0f766e',
+              gold: '#d4a017',
+              goldLight: '#f0c14b',
+              yellow: '#fbbf24',
+              blue: '#1e40af',
+              navy: '#1e3a5f'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root { --school-teal: #0d9488; --school-gold: #d4a017; --school-navy: #1e3a5f; }
+    * { -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
+    body { overscroll-behavior-y: none; }
+    .page-enter { animation: fadeIn 0.25s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1); }
+    .id-card { background: linear-gradient(135deg, #0d9488 0%, #1e3a5f 100%); border-radius: 1rem; box-shadow: 0 20px 40px -10px rgba(13, 148, 136, 0.4); }
+    .stat-card { background: white; border-radius: 1rem; border: 1px solid #e5e7eb; }
+    .toast { animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--school-teal); box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2); }
+    .bottom-nav { padding-bottom: env(safe-area-inset-bottom, 0); }
+    @media print { .no-print { display: none !important; } }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased">
+  <div id="app" class="min-h-screen flex flex-col"></div>
+  <div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-2"></div>
+
+<script>
+/**
+ * Anwar-Ul Islam Model College – Single-file Digital Portal
+ * Official data from https://anwarulislammodelcollege.com/
+ */
+
+const SCHOOL = {
+  name: "Anwar-Ul Islam Model College",
+  shortName: "AIMC",
+  motto: "Learn • Grow • Excel",
+  tagline: "The first secondary school solely founded by Muslims in Nigeria and along the Coast of West Africa",
+  address: "1, Oniwaya Road, Dopemu Agege, Lagos",
+  phone: "+234 803 385 6059",
+  email: "info@anwarulislammodelcollege.com",
+  website: "https://anwarulislammodelcollege.com/",
+  logo: "https://anwarulislammodelcollege.com/wp-content/uploads/2024/04/Long-Logo.png",
+  vision: "To produce excellent and decent Men who will excel globally and contribute to the society with good mannerism.",
+  mission: "To provide qualitative value in Islamic and Western Education which brings the best potential in the personality and academic life of Male Students.",
+  principal: "Mr Soyebo Waheed Olusola",
+  founded: 1948,
+  historyShort: "Anwar-Ul Islam Model College, formerly known as Saka Tinubu Memorial Ahmadiyya High School, Olushi, Lagos, holds the distinction of being the first secondary school solely founded by Muslims in Nigeria and along the Coast of West Africa. Established in 1948 by visionary Muslim leaders, including Late Alhaji Jubril Martins. Moved to Agege, Lagos, in 1956.",
+  historyFull: `The College was initially known as Saka Tinubu Memorial Ahmadiyya High School, Olushi, Lagos. Our college is the first Secondary School solely founded by Muslims in Nigeria and even along the Coast of West Africa.
+
+On Monday, 5th April, 1948, the doors of Saka Tinubu Memorial Ahmadiyya High School at Olushi Street, Lagos were thrown open to students. In January 1956, there was a change of name to Ahmadiyya College and movement to the present site in Agege. In 1976 the name changed to Anwar-ul Islam College, Agege.
+
+In 2001 the school was returned to its proprietors. The college continues to excel in academics, sports and character formation.`,
+  facilities: [
+    "Well equipped science laboratories",
+    "Attractive, neat and serene learning environment",
+    "Hostel accommodation for boarding house students",
+    "Seasoned, competent, qualified and well experienced staff",
+    "Well equipped college clinic",
+    "Well stocked E-library with internet",
+    "Scholarships for indigent and brilliant students",
+    "24/7 solar – No power outage",
+    "Effective Quranic and Arabic studies with French at Junior classes",
+    "Excellent moral and religious value",
+    "Adequate extra curricular activities",
+    "Maximum security guaranteed",
+    "School Sport Arena"
+  ],
+  board: [
+    { name: "Alhaji Hameed A. Ajani", role: "Chairman" },
+    { name: "Alhaji Adeosun A.A", role: "Vice Chairman" },
+    { name: "Alhaji Abdulrahman Alarape Snr.", role: "ACAOSA" },
+    { name: "Hon. Lawal Pedro SAN", role: "ACAOSA" },
+    { name: "Mr Adedokun Adewumi", role: "PTA Chairman" },
+    { name: "Alhaja Bolanle Dosumu", role: "Member" },
+    { name: "Mr Soyebo Waheed Olusola", role: "Principal" }
+  ]
+};
+
+const DEMO_USERS = {
+  student: { id: "STU-2024-0142", name: "Adebayo Ibrahim", role: "student", class: "SSS 2", arm: "Science", house: "Blue House", session: "2025/2026" },
+  parent: { id: "PAR-001", name: "Mrs. Fatima Adebayo", role: "parent", children: ["STU-2024-0142"] },
+  teacher: { id: "TCH-018", name: "Mr. Olumide Akinwale", role: "teacher", subjects: ["Mathematics", "Further Mathematics"], classes: ["SSS 1 Science", "SSS 2 Science", "SSS 3 Science"] },
+  admin: { id: "ADM-001", name: "Admin Portal", role: "admin" }
+};
+
+const ANNOUNCEMENTS = [
+  { id: 1, title: "2025 Inter-House Sports Competition – Champions Emerge", date: "2025-03-16", category: "Sports", excerpt: "Champions emerge as Anwar-Ul Islam Model College hosts the 2025 Inter-House Sports Competition." },
+  { id: 2, title: "Second Term Examination Timetable Released", date: "2026-01-20", category: "Academic", excerpt: "The second term examination timetable has been published." },
+  { id: 3, title: "PTA Meeting – Notice", date: "2026-02-05", category: "PTA", excerpt: "All parents and guardians are invited to the general PTA meeting." }
+];
+
+const TIMETABLE = {
+  "Monday": [
+    { time: "08:00 – 08:40", subject: "Mathematics", teacher: "Mr. Akinwale" },
+    { time: "08:40 – 09:20", subject: "English Language", teacher: "Mrs. Bello" },
+    { time: "09:20 – 10:00", subject: "Physics", teacher: "Mr. Okoro" },
+    { time: "10:20 – 11:00", subject: "Chemistry", teacher: "Mrs. Adeyemi" },
+    { time: "11:00 – 11:40", subject: "Biology", teacher: "Mr. Hassan" }
+  ],
+  "Tuesday": [
+    { time: "08:00 – 08:40", subject: "Further Mathematics", teacher: "Mr. Akinwale" },
+    { time: "08:40 – 09:20", subject: "Economics", teacher: "Mrs. Yusuf" },
+    { time: "09:20 – 10:00", subject: "Islamic Studies", teacher: "Mallam Ibrahim" },
+    { time: "10:20 – 11:00", subject: "Computer Science", teacher: "Mr. Ojo" },
+    { time: "11:00 – 11:40", subject: "Literature", teacher: "Mrs. Bello" }
+  ]
+};
+
+const SAMPLE_RESULTS = {
+  term: "First Term", session: "2025/2026",
+  subjects: [
+    { name: "Mathematics", ca: 28, exam: 55, total: 83, grade: "A" },
+    { name: "English Language", ca: 25, exam: 48, total: 73, grade: "B" },
+    { name: "Physics", ca: 30, exam: 52, total: 82, grade: "A" },
+    { name: "Chemistry", ca: 27, exam: 50, total: 77, grade: "B" },
+    { name: "Biology", ca: 29, exam: 54, total: 83, grade: "A" },
+    { name: "Islamic Studies", ca: 32, exam: 58, total: 90, grade: "A" }
+  ],
+  average: 81.3, classPosition: 4,
+  teacherComment: "Adebayo is a diligent student who shows excellent understanding of scientific concepts.",
+  principalComment: "Well done. Continue to strive for excellence."
+};
+
+const SAMPLE_FEES = {
+  session: "2025/2026", term: "Second Term",
+  items: [
+    { name: "Tuition", amount: 85000 },
+    { name: "Boarding (optional)", amount: 120000 },
+    { name: "Development Levy", amount: 15000 },
+    { name: "ICT & Library", amount: 10000 },
+    { name: "Sports & Clubs", amount: 5000 }
+  ],
+  paid: 85000, outstanding: 150000, dueDate: "2026-02-28"
+};
+
+const BADGES = [
+  { name: "Academic Excellence", icon: "🏆", earned: true },
+  { name: "Perfect Attendance", icon: "⭐", earned: false },
+  { name: "Quiz Master", icon: "🧠", earned: true },
+  { name: "Reading Champion", icon: "📚", earned: false },
+  { name: "Outstanding Improvement", icon: "🎯", earned: false },
+  { name: "Good Character", icon: "🤝", earned: true }
+];
+
+const CALENDAR = [
+  { date: "2025-03-16", title: "Inter-House Sports Competition", type: "sports" },
+  { date: "2026-01-20", title: "Second Term Exams Begin", type: "exam" },
+  { date: "2026-02-05", title: "PTA General Meeting", type: "pta" },
+  { date: "2026-03-15", title: "Cultural Day", type: "event" },
+  { date: "2026-04-05", title: "Founders' Day / Anniversary", type: "event" }
+];
+
+const state = { user: null, currentView: 'landing', activeChild: null };
+
+function $(sel, parent = document) { return parent.querySelector(sel); }
+function toast(msg, type = 'info') {
+  const container = $('#toast-container');
+  const el = document.createElement('div');
+  el.className = `toast px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium ${type === 'success' ? 'bg-teal-600' : type === 'error' ? 'bg-red-600' : 'bg-gray-800'}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+function formatCurrency(n) { return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(n); }
+function formatDate(d) { return new Date(d).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' }); }
+
+function loginAs(role) {
+  state.user = { ...DEMO_USERS[role] };
+  if (role === 'parent') state.activeChild = DEMO_USERS.student;
+  toast(`Welcome, ${state.user.name}`, 'success');
+  navigate('dashboard');
+}
+function logout() { state.user = null; state.activeChild = null; navigate('landing'); toast('You have been logged out'); }
+function navigate(view) { state.currentView = view; render(); window.scrollTo(0, 0); }
+
+function render() {
+  const app = $('#app');
+  if (!state.user) {
+    if (state.currentView === 'about') app.innerHTML = renderAbout();
+    else if (state.currentView === 'contact') app.innerHTML = renderContact();
+    else app.innerHTML = renderLanding();
+  } else {
+    app.innerHTML = renderShell();
+  }
+  const modal = document.getElementById('login-modal');
+  if (modal) modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+}
+
+function renderLanding() {
+  return `
+  <div class="page-enter">
+    <header class="bg-school-teal text-white sticky top-0 z-50 shadow-md">
+      <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img src="${SCHOOL.logo}" alt="AIMC Logo" class="h-10 md:h-12 object-contain bg-white rounded px-1" onerror="this.style.display='none'" />
+          <div class="hidden sm:block"><div class="font-bold text-sm leading-tight">Anwar-Ul Islam</div><div class="text-xs opacity-90">Model College</div></div>
+        </div>
+        <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+          <button onclick="navigate('landing')" class="hover:text-yellow-300">Home</button>
+          <button onclick="navigate('about')" class="hover:text-yellow-300">About</button>
+          <button onclick="navigate('contact')" class="hover:text-yellow-300">Contact</button>
+        </nav>
+        <button onclick="document.getElementById('login-modal').classList.remove('hidden')" class="bg-school-gold hover:bg-yellow-500 text-gray-900 font-semibold px-4 py-2 rounded-lg text-sm transition">Portal Login</button>
+      </div>
+    </header>
+
+    <section class="relative bg-gradient-to-br from-school-teal via-teal-700 to-school-navy text-white overflow-hidden">
+      <div class="relative max-w-6xl mx-auto px-4 py-16 md:py-24 text-center">
+        <img src="${SCHOOL.logo}" alt="Logo" class="h-16 md:h-20 mx-auto mb-6 bg-white/90 rounded-lg p-2 shadow-lg" onerror="this.style.display='none'" />
+        <h1 class="text-3xl md:text-5xl font-bold tracking-tight mb-3">Anwar-Ul Islam Model College</h1>
+        <p class="text-school-gold text-lg md:text-xl font-medium mb-2">${SCHOOL.motto}</p>
+        <p class="max-w-2xl mx-auto text-teal-100 text-sm md:text-base mb-8">${SCHOOL.tagline}</p>
+        <div class="flex flex-wrap justify-center gap-3">
+          <button onclick="document.getElementById('login-modal').classList.remove('hidden')" class="bg-school-gold hover:bg-yellow-400 text-gray-900 font-bold px-6 py-3 rounded-xl shadow-lg transition">Access Portal</button>
+          <button onclick="navigate('about')" class="bg-white/15 hover:bg-white/25 backdrop-blur border border-white/30 px-6 py-3 rounded-xl font-semibold transition">About the School</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-4 -mt-8 relative z-10">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        ${[{label:'Founded',value:'1948'},{label:'Location',value:'Agege, Lagos'},{label:'Type',value:'Boys College'},{label:'Focus',value:'Islamic + Western'}].map(s => `
+          <div class="bg-white rounded-xl shadow-md p-4 text-center border border-gray-100">
+            <div class="text-2xl font-bold text-school-teal">${s.value}</div>
+            <div class="text-xs text-gray-500 mt-1">${s.label}</div>
+          </div>`).join('')}
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-4 py-12 md:py-16">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div class="text-school-gold font-bold text-sm uppercase tracking-wider mb-2">Our Vision</div>
+          <p class="text-gray-700 leading-relaxed">${SCHOOL.vision}</p>
+        </div>
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div class="text-school-gold font-bold text-sm uppercase tracking-wider mb-2">Our Mission</div>
+          <p class="text-gray-700 leading-relaxed">${SCHOOL.mission}</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-gray-100 py-12">
+      <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-2xl font-bold text-center mb-8 text-school-navy">Why Choose AIMC</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          ${SCHOOL.facilities.slice(0,6).map(f => `
+            <div class="bg-white rounded-xl p-4 flex items-start gap-3 shadow-sm">
+              <span class="text-school-teal text-xl">✓</span>
+              <span class="text-sm text-gray-700">${f}</span>
+            </div>`).join('')}
+        </div>
+        <div class="text-center mt-6">
+          <button onclick="navigate('about')" class="text-school-teal font-semibold hover:underline">View all facilities & history →</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-4 py-12 md:py-16">
+      <h2 class="text-2xl font-bold text-center mb-2 text-school-navy">School Portal</h2>
+      <p class="text-center text-gray-500 mb-8 text-sm">Select your role to continue (Demo login)</p>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        ${[
+          {role:'student',title:'Student',desc:'Timetable, results, assignments, CBT, ID card'},
+          {role:'parent',title:'Parent',desc:'Attendance, results, fees, messaging, calendar'},
+          {role:'teacher',title:'Teacher',desc:'Classes, attendance, results upload, CBT'},
+          {role:'admin',title:'Administrator',desc:'Full school management & reports'}
+        ].map(r => `
+          <button onclick="loginAs('${r.role}')" class="card-hover bg-white rounded-2xl p-6 text-left border border-gray-100 shadow-sm hover:border-school-teal/40 group">
+            <div class="w-12 h-12 rounded-xl bg-school-teal/10 text-school-teal flex items-center justify-center text-2xl mb-4 group-hover:bg-school-teal group-hover:text-white transition">
+              ${r.role==='student'?'🎓':r.role==='parent'?'👨‍👩‍👧':r.role==='teacher'?'👩‍🏫':'⚙️'}
+            </div>
+            <h3 class="font-bold text-lg text-gray-900">${r.title}</h3>
+            <p class="text-sm text-gray-500 mt-1">${r.desc}</p>
+          </button>`).join('')}
+      </div>
+    </section>
+
+    <footer class="bg-school-navy text-white mt-auto">
+      <div class="max-w-6xl mx-auto px-4 py-10">
+        <div class="flex flex-col md:flex-row justify-between gap-6">
+          <div>
+            <img src="${SCHOOL.logo}" alt="Logo" class="h-12 bg-white rounded p-1 mb-3" onerror="this.style.display='none'" />
+            <p class="text-sm text-gray-300 max-w-xs">${SCHOOL.name}<br>${SCHOOL.address}</p>
+          </div>
+          <div class="text-sm">
+            <div class="font-semibold mb-2">Contact</div>
+            <p>${SCHOOL.phone}</p>
+            <p>${SCHOOL.email}</p>
+            <a href="${SCHOOL.website}" target="_blank" class="text-school-gold hover:underline">Official Website</a>
+          </div>
+        </div>
+        <div class="border-t border-white/10 mt-8 pt-6 text-center text-xs text-gray-400">
+          © ${new Date().getFullYear()} Anwar-Ul Islam Model College, Agege. Digital Portal Prototype.
+        </div>
+      </div>
+    </footer>
+
+    <div id="login-modal" class="hidden fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-school-navy">Portal Login</h3>
+          <button onclick="document.getElementById('login-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        <p class="text-sm text-gray-500 mb-6">Demonstration portal. Choose a role to explore. No real credentials required.</p>
+        <div class="space-y-3">
+          <button onclick="loginAs('student');document.getElementById('login-modal').classList.add('hidden')" class="w-full py-3 rounded-xl bg-school-teal text-white font-semibold">Continue as Student</button>
+          <button onclick="loginAs('parent');document.getElementById('login-modal').classList.add('hidden')" class="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold">Continue as Parent</button>
+          <button onclick="loginAs('teacher');document.getElementById('login-modal').classList.add('hidden')" class="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold">Continue as Teacher</button>
+          <button onclick="loginAs('admin');document.getElementById('login-modal').classList.add('hidden')" class="w-full py-3 rounded-xl bg-amber-600 text-white font-semibold">Continue as Administrator</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAbout() {
+  return `
+  <div class="page-enter min-h-screen flex flex-col">
+    <header class="bg-school-teal text-white sticky top-0 z-50 shadow">
+      <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+        <button onclick="navigate('landing')" class="flex items-center gap-2 text-sm font-medium">← Back</button>
+        <span class="font-semibold">About the School</span>
+        <div class="w-12"></div>
+      </div>
+    </header>
+    <main class="flex-1 max-w-4xl mx-auto px-4 py-8">
+      <div class="text-center mb-8">
+        <img src="${SCHOOL.logo}" alt="Logo" class="h-16 mx-auto mb-4 bg-white rounded-lg p-2 shadow" onerror="this.style.display='none'" />
+        <h1 class="text-2xl md:text-3xl font-bold text-school-navy">${SCHOOL.name}</h1>
+        <p class="text-school-gold font-medium mt-1">${SCHOOL.motto}</p>
+      </div>
+      <section class="bg-white rounded-2xl p-6 shadow-sm border mb-6">
+        <h2 class="text-lg font-bold text-school-teal mb-3">Our History</h2>
+        <div class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">${SCHOOL.historyFull}</div>
+      </section>
+      <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div class="bg-white rounded-2xl p-5 shadow-sm border"><h3 class="font-bold text-school-gold mb-2">Vision</h3><p class="text-sm text-gray-700">${SCHOOL.vision}</p></div>
+        <div class="bg-white rounded-2xl p-5 shadow-sm border"><h3 class="font-bold text-school-gold mb-2">Mission</h3><p class="text-sm text-gray-700">${SCHOOL.mission}</p></div>
+      </div>
+      <section class="bg-white rounded-2xl p-6 shadow-sm border mb-6">
+        <h2 class="text-lg font-bold text-school-teal mb-4">Board of Governors & Leadership</h2>
+        <div class="space-y-2">
+          ${SCHOOL.board.map(b => `<div class="flex justify-between items-center py-2 border-b border-gray-50 last:border-0"><span class="font-medium text-sm">${b.name}</span><span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">${b.role}</span></div>`).join('')}
+        </div>
+      </section>
+      <section class="bg-white rounded-2xl p-6 shadow-sm border mb-6">
+        <h2 class="text-lg font-bold text-school-teal mb-4">Facilities</h2>
+        <ul class="grid sm:grid-cols-2 gap-2">
+          ${SCHOOL.facilities.map(f => `<li class="text-sm text-gray-700 flex gap-2"><span class="text-school-teal">•</span> ${f}</li>`).join('')}
+        </ul>
+      </section>
+      <div class="text-center text-sm text-gray-500">Source: <a href="${SCHOOL.website}" target="_blank" class="text-school-teal hover:underline">Official Website</a></div>
+    </main>
+  </div>`;
+}
+
+function renderContact() {
+  return `
+  <div class="page-enter min-h-screen flex flex-col">
+    <header class="bg-school-teal text-white sticky top-0 z-50 shadow">
+      <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+        <button onclick="navigate('landing')" class="flex items-center gap-2 text-sm font-medium">← Back</button>
+        <span class="font-semibold">Contact Us</span>
+        <div class="w-12"></div>
+      </div>
+    </header>
+    <main class="flex-1 max-w-lg mx-auto px-4 py-10">
+      <div class="bg-white rounded-2xl p-6 shadow-sm border text-center">
+        <img src="${SCHOOL.logo}" alt="Logo" class="h-14 mx-auto mb-4 bg-gray-50 rounded p-1" onerror="this.style.display='none'" />
+        <h1 class="text-xl font-bold text-school-navy mb-6">${SCHOOL.name}</h1>
+        <div class="space-y-4 text-left text-sm">
+          <div><div class="text-xs text-gray-400 uppercase tracking-wide">Address</div><div class="font-medium">${SCHOOL.address}</div></div>
+          <div><div class="text-xs text-gray-400 uppercase tracking-wide">Phone</div><a href="tel:${SCHOOL.phone}" class="font-medium text-school-teal">${SCHOOL.phone}</a></div>
+          <div><div class="text-xs text-gray-400 uppercase tracking-wide">Email</div><a href="mailto:${SCHOOL.email}" class="font-medium text-school-teal">${SCHOOL.email}</a></div>
+          <div><div class="text-xs text-gray-400 uppercase tracking-wide">Website</div><a href="${SCHOOL.website}" target="_blank" class="font-medium text-school-teal">${SCHOOL.website}</a></div>
+        </div>
+      </div>
+    </main>
+  </div>`;
+}
+
+function getNavForRole(role) {
+  const common = [{ view: 'dashboard', label: 'Dashboard', short: 'Home', icon: '🏠' }];
+  if (role === 'student') return [...common,
+    { view: 'timetable', label: 'Timetable', icon: '📅' },
+    { view: 'results', label: 'Results', icon: '📊' },
+    { view: 'idcard', label: 'Student ID', short: 'ID', icon: '🪪' },
+    { view: 'assignments', label: 'Assignments', icon: '📝' },
+    { view: 'cbt', label: 'CBT Exams', short: 'CBT', icon: '💻' },
+    { view: 'announcements', label: 'Announcements', short: 'News', icon: '📢' },
+    { view: 'achievements', label: 'Achievements', short: 'Badges', icon: '🏆' }
+  ];
+  if (role === 'parent') return [...common,
+    { view: 'results', label: 'Results', icon: '📊' },
+    { view: 'fees', label: 'Fees & Payments', short: 'Fees', icon: '💳' },
+    { view: 'attendance', label: 'Attendance', icon: '✅' },
+    { view: 'announcements', label: 'Announcements', short: 'News', icon: '📢' },
+    { view: 'messages', label: 'Messages', icon: '💬' },
+    { view: 'calendar', label: 'Calendar', icon: '📆' }
+  ];
+  if (role === 'teacher') return [...common,
+    { view: 'classes', label: 'My Classes', short: 'Classes', icon: '🏫' },
+    { view: 'attendance', label: 'Take Attendance', short: 'Attend', icon: '✅' },
+    { view: 'results-upload', label: 'Upload Results', short: 'Results', icon: '📤' },
+    { view: 'announcements', label: 'Announcements', short: 'News', icon: '📢' }
+  ];
+  return [...common,
+    { view: 'students', label: 'Students', icon: '🎓' },
+    { view: 'admissions', label: 'Admissions', icon: '📋' },
+    { view: 'fees-admin', label: 'Fees', icon: '💰' },
+    { view: 'announcements', label: 'Announcements', short: 'News', icon: '📢' },
+    { view: 'settings', label: 'School Settings', short: 'Settings', icon: '⚙️' }
+  ];
+}
+
+function renderShell() {
+  const role = state.user.role;
+  const navItems = getNavForRole(role);
+  return `
+  <div class="page-enter min-h-screen flex flex-col bg-gray-50">
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div class="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <img src="${SCHOOL.logo}" alt="Logo" class="h-9 object-contain" onerror="this.style.display='none'" />
+          <div class="hidden sm:block">
+            <div class="text-sm font-bold text-school-navy leading-tight">AIMC Portal</div>
+            <div class="text-[10px] text-gray-400 uppercase tracking-wider">${role}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-sm font-medium text-gray-700 hidden sm:inline">${state.user.name}</span>
+          <button onclick="logout()" class="text-xs bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg font-medium">Logout</button>
+        </div>
+      </div>
+    </header>
+    <div class="flex-1 flex max-w-6xl mx-auto w-full">
+      <aside class="hidden md:block w-56 shrink-0 border-r border-gray-200 bg-white p-3 sticky top-[53px] h-[calc(100vh-53px)] overflow-y-auto">
+        <nav class="space-y-1">
+          ${navItems.map(item => `
+            <button onclick="navigate('${item.view}')" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition ${state.currentView === item.view ? 'bg-school-teal/10 text-school-teal' : 'text-gray-600 hover:bg-gray-50'}">
+              <span class="mr-2">${item.icon}</span>${item.label}
+            </button>`).join('')}
+        </nav>
+      </aside>
+      <main class="flex-1 p-4 md:p-6 pb-24 md:pb-6 overflow-x-hidden">
+        ${renderDashboardContent()}
+      </main>
+    </div>
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 bottom-nav z-40">
+      <div class="flex justify-around py-2">
+        ${navItems.slice(0,5).map(item => `
+          <button onclick="navigate('${item.view}')" class="flex flex-col items-center px-2 py-1 ${state.currentView === item.view ? 'text-school-teal' : 'text-gray-400'}">
+            <span class="text-lg">${item.icon}</span>
+            <span class="text-[10px] font-medium mt-0.5">${item.short || item.label.split(' ')[0]}</span>
+          </button>`).join('')}
+      </div>
+    </nav>
+  </div>`;
+}
+
+function renderDashboardContent() {
+  const view = state.currentView;
+  const role = state.user.role;
+  if (view === 'dashboard') return renderRoleDashboard(role);
+  if (view === 'timetable') return renderTimetable();
+  if (view === 'results') return renderResults();
+  if (view === 'idcard') return renderIdCard();
+  if (view === 'assignments') return renderAssignments();
+  if (view === 'cbt') return renderCBT();
+  if (view === 'announcements') return renderAnnouncements();
+  if (view === 'achievements') return renderAchievements();
+  if (view === 'fees') return renderFees();
+  if (view === 'attendance') return renderAttendance();
+  if (view === 'messages') return renderMessages();
+  if (view === 'calendar') return renderCalendar();
+  if (view === 'classes') return `<div><h1 class="text-xl font-bold mb-4">My Classes</h1>${state.user.classes.map(c => `<div class="bg-white rounded-xl border p-4 mb-3 flex justify-between"><div><div class="font-semibold">${c}</div><div class="text-xs text-gray-400">~42 students</div></div><button onclick="navigate('attendance')" class="text-sm text-school-teal font-medium">Attendance</button></div>`).join('')}</div>`;
+  if (view === 'results-upload') return `<div><h1 class="text-xl font-bold mb-4">Upload Results</h1><div class="bg-white rounded-xl border p-6"><p class="text-sm text-gray-600 mb-4">Select class and subject, then enter scores. Production supports bulk upload.</p><select class="w-full border rounded-lg px-3 py-2 text-sm mb-3"><option>SSS 2 Science</option></select><select class="w-full border rounded-lg px-3 py-2 text-sm mb-3"><option>Mathematics</option></select><button class="w-full py-3 bg-school-teal text-white rounded-xl font-semibold" onclick="toast('Ready for backend integration')">Continue to Score Entry</button></div></div>`;
+  if (view === 'students') return `<div><h1 class="text-xl font-bold mb-4">Students</h1><div class="bg-white rounded-xl border overflow-hidden"><div class="px-4 py-3 bg-gray-50 text-xs font-semibold flex justify-between"><span>Name</span><span>Class</span><span>ID</span></div>${[DEMO_USERS.student,{name:'Yusuf Ahmed',class:'SSS 1 Science',id:'STU-2024-0087'},{name:'Chinedu Okeke',class:'JSS 3',id:'STU-2025-0211'}].map(s => `<div class="px-4 py-2.5 text-sm border-t flex justify-between"><span class="font-medium">${s.name}</span><span class="text-gray-500">${s.class}</span><span class="text-xs text-gray-400">${s.id}</span></div>`).join('')}</div></div>`;
+  if (view === 'admissions') return `<div><h1 class="text-xl font-bold mb-4">Admissions</h1><div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">${['Submitted','Under Review','Accepted','Registration Complete'].map((s,i) => `<div class="stat-card p-3 text-center"><div class="text-xl font-bold text-school-teal">${[12,8,5,3][i]}</div><div class="text-[10px] text-gray-500">${s}</div></div>`).join('')}</div><div class="bg-white rounded-xl border p-4 text-sm text-gray-600">Full online admission flow includes applicant account, biodata, parent details, document upload, tracking and admission letter.</div></div>`;
+  if (view === 'fees-admin') return `<div><h1 class="text-xl font-bold mb-4">Fees Management</h1><div class="stat-card p-4 mb-4 text-center"><div class="text-2xl font-bold text-amber-600">₦12.4M</div><div class="text-sm text-gray-500">Total Outstanding (demo)</div></div><p class="text-sm text-gray-600">Architecture ready for Paystack / Flutterwave integration.</p></div>`;
+  if (view === 'settings') return `<div><h1 class="text-xl font-bold mb-4">School Settings</h1><div class="bg-white rounded-xl border p-4 space-y-3 text-sm"><div class="flex justify-between"><span>School Name</span><span class="font-medium">${SCHOOL.name}</span></div><div class="flex justify-between"><span>Current Session</span><span class="font-medium">2025/2026</span></div><div class="flex justify-between"><span>Principal</span><span class="font-medium">${SCHOOL.principal}</span></div></div></div>`;
+  return `<div class="text-center py-20 text-gray-400">Section under construction</div>`;
+}
+
+function renderRoleDashboard(role) {
+  if (role === 'student') {
+    const s = state.user;
+    return `<div><h1 class="text-xl font-bold text-school-navy mb-1">Welcome back, ${s.name.split(' ')[0]} 👋</h1><p class="text-sm text-gray-500 mb-6">${s.class} ${s.arm} • ${s.house} • ${s.session}</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">${[{label:'Class Position',value:'4th',sub:'of 42'},{label:'Average',value:'81.3%',sub:'First Term'},{label:'Attendance',value:'96%',sub:'This term'},{label:'Pending Tasks',value:'3',sub:'Assignments'}].map(c => `<div class="stat-card p-4"><div class="text-2xl font-bold text-school-teal">${c.value}</div><div class="text-xs font-medium text-gray-700 mt-1">${c.label}</div><div class="text-[10px] text-gray-400">${c.sub}</div></div>`).join('')}</div>
+      <div class="grid md:grid-cols-2 gap-4"><div class="bg-white rounded-xl border p-4"><h3 class="font-semibold text-sm mb-3">Latest Announcements</h3>${ANNOUNCEMENTS.slice(0,3).map(a => `<div class="py-2 border-b last:border-0"><div class="text-sm font-medium">${a.title}</div><div class="text-xs text-gray-400">${formatDate(a.date)} • ${a.category}</div></div>`).join('')}</div>
+      <div class="bg-white rounded-xl border p-4"><h3 class="font-semibold text-sm mb-3">Quick Actions</h3><div class="grid grid-cols-2 gap-2"><button onclick="navigate('idcard')" class="p-3 rounded-lg bg-teal-50 text-teal-800 text-sm font-medium">Digital ID</button><button onclick="navigate('results')" class="p-3 rounded-lg bg-blue-50 text-blue-800 text-sm font-medium">View Results</button><button onclick="navigate('cbt')" class="p-3 rounded-lg bg-indigo-50 text-indigo-800 text-sm font-medium">Take CBT</button><button onclick="navigate('announcements')" class="p-3 rounded-lg bg-purple-50 text-purple-800 text-sm font-medium">News</button></div></div></div></div>`;
+  }
+  if (role === 'parent') {
+    const child = state.activeChild || DEMO_USERS.student;
+    return `<div><h1 class="text-xl font-bold text-school-navy mb-1">Parent Dashboard</h1><p class="text-sm text-gray-500 mb-4">Viewing: <strong>${child.name}</strong> (${child.class})</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">${[{label:'Outstanding Fees',value:formatCurrency(SAMPLE_FEES.outstanding),sub:'Due soon'},{label:'Attendance',value:'96%',sub:'This term'},{label:'Average Score',value:'81.3%',sub:'First Term'},{label:'Messages',value:'2',sub:'Unread'}].map(c => `<div class="stat-card p-4"><div class="text-lg md:text-xl font-bold text-school-teal">${c.value}</div><div class="text-xs font-medium text-gray-700 mt-1">${c.label}</div><div class="text-[10px] text-gray-400">${c.sub}</div></div>`).join('')}</div>
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-sm"><strong>Payment reminder:</strong> Second Term fees outstanding. Due: ${formatDate(SAMPLE_FEES.dueDate)}. <button onclick="navigate('fees')" class="ml-2 text-school-teal font-semibold underline">Pay / View</button></div>
+      <div class="grid md:grid-cols-2 gap-4"><div class="bg-white rounded-xl border p-4"><h3 class="font-semibold text-sm mb-3">Recent Results</h3>${SAMPLE_RESULTS.subjects.slice(0,4).map(s => `<div class="flex justify-between text-sm py-1.5 border-b last:border-0"><span>${s.name}</span><span class="font-semibold">${s.total} (${s.grade})</span></div>`).join('')}<button onclick="navigate('results')" class="mt-3 text-school-teal text-sm font-medium">Full report card →</button></div>
+      <div class="bg-white rounded-xl border p-4"><h3 class="font-semibold text-sm mb-3">Quick Links</h3><div class="space-y-2"><button onclick="navigate('fees')" class="w-full text-left p-2 rounded-lg hover:bg-gray-50 text-sm">💳 Fees & Receipts</button><button onclick="navigate('messages')" class="w-full text-left p-2 rounded-lg hover:bg-gray-50 text-sm">💬 Message Teachers</button><button onclick="navigate('calendar')" class="w-full text-left p-2 rounded-lg hover:bg-gray-50 text-sm">📆 School Calendar</button></div></div></div></div>`;
+  }
+  if (role === 'teacher') {
+    return `<div><h1 class="text-xl font-bold text-school-navy mb-1">Teacher Dashboard</h1><p class="text-sm text-gray-500 mb-6">${state.user.subjects.join(', ')} • ${state.user.classes.length} classes</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">${[{label:'My Classes',value:state.user.classes.length},{label:'Students',value:'126'},{label:'Pending Results',value:'2'},{label:'Active CBT',value:'1'}].map(c => `<div class="stat-card p-4 text-center"><div class="text-2xl font-bold text-school-teal">${c.value}</div><div class="text-xs text-gray-600 mt-1">${c.label}</div></div>`).join('')}</div>
+      <div class="bg-white rounded-xl border p-4 mb-4"><h3 class="font-semibold text-sm mb-3">Assigned Classes</h3>${state.user.classes.map(c => `<div class="flex justify-between items-center py-2 border-b last:border-0 text-sm"><span>${c}</span><button onclick="navigate('attendance')" class="text-school-teal text-xs font-medium">Take Attendance</button></div>`).join('')}</div>
+      <div class="grid grid-cols-2 gap-3"><button onclick="navigate('results-upload')" class="p-4 rounded-xl bg-school-teal text-white font-semibold text-sm">Upload Results</button><button onclick="navigate('announcements')" class="p-4 rounded-xl bg-indigo-600 text-white font-semibold text-sm">Announcements</button></div></div>`;
+  }
+  return `<div><h1 class="text-xl font-bold text-school-navy mb-1">Administrator Dashboard</h1><p class="text-sm text-gray-500 mb-6">School-wide overview • ${SCHOOL.name}</p>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">${[{label:'Total Students',value:'487'},{label:'Teachers',value:'34'},{label:'Pending Admissions',value:'18'},{label:'Outstanding Fees',value:'₦12.4M'},{label:"Today's Attendance",value:'94%'},{label:'Upcoming Exams',value:'3'}].map(c => `<div class="stat-card p-3 text-center"><div class="text-lg font-bold text-school-teal">${c.value}</div><div class="text-[10px] text-gray-500 mt-0.5">${c.label}</div></div>`).join('')}</div>
+    <div class="grid md:grid-cols-2 gap-4"><div class="bg-white rounded-xl border p-4"><h3 class="font-semibold text-sm mb-3">Quick Management</h3><div class="grid grid-cols-2 gap-2"><button onclick="navigate('students')" class="p-3 rounded-lg bg-teal-50 text-sm font-medium">Students</button><button onclick="navigate('admissions')" class="p-3 rounded-lg bg-blue-50 text-sm font-medium">Admissions</button><button onclick="navigate('fees-admin')" class="p-3 rounded-lg bg-amber-50 text-sm font-medium">Fees</button><button onclick="navigate('settings')" class="p-3 rounded-lg bg-indigo-50 text-sm font-medium">Settings</button></div></div>
+    <div class="bg-white rounded-xl border p-4"><h3 class="font-semibold text-sm mb-3">Recent Activity</h3><div class="text-sm text-gray-600 space-y-2"><div>• 3 new admission applications</div><div>• SSS 2 Science results uploaded</div><div>• Inter-House Sports announcement published</div></div></div></div></div>`;
+}
+
+function renderTimetable() {
+  return `<div><h1 class="text-xl font-bold mb-4">Class Timetable</h1><p class="text-sm text-gray-500 mb-4">${state.user.class || 'SSS 2'} Science • Demo timetable</p>
+    ${Object.entries(TIMETABLE).map(([day, periods]) => `<div class="bg-white rounded-xl border mb-4 overflow-hidden"><div class="bg-school-teal text-white px-4 py-2 font-semibold text-sm">${day}</div><div class="divide-y">${periods.map(p => `<div class="px-4 py-2.5 flex justify-between text-sm"><div><div class="font-medium">${p.subject}</div><div class="text-xs text-gray-400">${p.teacher}</div></div><div class="text-gray-500 text-xs self-center">${p.time}</div></div>`).join('')}</div></div>`).join('')}</div>`;
+}
+
+function renderResults() {
+  const r = SAMPLE_RESULTS;
+  return `<div><div class="flex flex-wrap justify-between items-start gap-2 mb-4"><div><h1 class="text-xl font-bold">Report Card</h1><p class="text-sm text-gray-500">${r.term} • ${r.session}</p></div><button onclick="window.print()" class="no-print text-sm bg-school-teal text-white px-4 py-2 rounded-lg">Download / Print</button></div>
+    <div class="bg-white rounded-xl border overflow-hidden mb-4"><table class="w-full text-sm"><thead class="bg-gray-50 text-left"><tr><th class="px-3 py-2">Subject</th><th class="px-3 py-2 text-center">CA</th><th class="px-3 py-2 text-center">Exam</th><th class="px-3 py-2 text-center">Total</th><th class="px-3 py-2 text-center">Grade</th></tr></thead>
+    <tbody>${r.subjects.map(s => `<tr class="border-t"><td class="px-3 py-2 font-medium">${s.name}</td><td class="px-3 py-2 text-center">${s.ca}</td><td class="px-3 py-2 text-center">${s.exam}</td><td class="px-3 py-2 text-center font-semibold">${s.total}</td><td class="px-3 py-2 text-center"><span class="bg-teal-100 text-teal-800 px-2 py-0.5 rounded text-xs font-bold">${s.grade}</span></td></tr>`).join('')}</tbody></table></div>
+    <div class="grid sm:grid-cols-3 gap-3 mb-4"><div class="stat-card p-3 text-center"><div class="text-xl font-bold text-school-teal">${r.average}%</div><div class="text-xs">Average</div></div><div class="stat-card p-3 text-center"><div class="text-xl font-bold text-school-teal">${r.classPosition}</div><div class="text-xs">Class Position</div></div><div class="stat-card p-3 text-center"><div class="text-xl font-bold text-school-teal">${r.subjects.length}</div><div class="text-xs">Subjects</div></div></div>
+    <div class="bg-white rounded-xl border p-4 space-y-3 text-sm"><div><strong>Teacher’s Comment:</strong> ${r.teacherComment}</div><div><strong>Principal’s Comment:</strong> ${r.principalComment}</div></div></div>`;
+}
+
+function renderIdCard() {
+  const s = state.user.role === 'parent' ? (state.activeChild || DEMO_USERS.student) : state.user;
+  return `<div><h1 class="text-xl font-bold mb-4">Digital Student ID</h1>
+    <div class="id-card text-white p-6 max-w-sm mx-auto relative overflow-hidden">
+      <div class="flex items-start justify-between mb-4"><img src="${SCHOOL.logo}" alt="Logo" class="h-10 bg-white rounded p-0.5" onerror="this.style.display='none'" /><div class="text-right text-[10px] opacity-80">2025/2026</div></div>
+      <div class="flex gap-4 items-center mb-4"><div class="w-20 h-20 rounded-xl bg-white/20 flex items-center justify-center text-3xl">👨‍🎓</div><div><div class="font-bold text-lg leading-tight">${s.name}</div><div class="text-sm opacity-90">${s.id}</div><div class="text-xs opacity-75 mt-1">${s.class} ${s.arm || ''}</div></div></div>
+      <div class="grid grid-cols-2 gap-2 text-xs mb-4"><div><span class="opacity-70">House</span><br><strong>${s.house}</strong></div><div><span class="opacity-70">Session</span><br><strong>${s.session}</strong></div></div>
+      <div class="bg-white rounded-lg p-3 flex items-center justify-center"><div class="w-24 h-24 bg-gray-800 flex items-center justify-center text-white text-[10px] text-center leading-tight p-1">QR CODE<br/>${s.id}</div></div>
+      <div class="text-center text-[10px] mt-3 opacity-70">${SCHOOL.name} • Official Digital ID</div>
+    </div>
+    <p class="text-center text-xs text-gray-400 mt-4">QR is a visual placeholder. Production generates a secure scannable QR.</p></div>`;
+}
+
+function renderAssignments() {
+  return `<div><h1 class="text-xl font-bold mb-4">Assignments</h1><div class="space-y-3">${[
+    {title:'Mathematics – Quadratic Equations',subject:'Mathematics',due:'2026-01-25',status:'Pending'},
+    {title:'Physics Practical Report',subject:'Physics',due:'2026-01-22',status:'Submitted'},
+    {title:'English Essay – My Role Model',subject:'English',due:'2026-01-28',status:'Pending'}
+  ].map(a => `<div class="bg-white rounded-xl border p-4 flex justify-between items-start"><div><div class="font-medium">${a.title}</div><div class="text-xs text-gray-400 mt-1">${a.subject} • Due ${formatDate(a.due)}</div></div><span class="text-xs px-2 py-1 rounded-full ${a.status==='Pending'?'bg-amber-100 text-amber-800':'bg-green-100 text-green-800'}">${a.status}</span></div>`).join('')}</div></div>`;
+}
+
+function renderCBT() {
+  return `<div><h1 class="text-xl font-bold mb-4">CBT Examination Centre</h1><div class="bg-white rounded-xl border p-6 text-center"><div class="text-4xl mb-3">💻</div><h2 class="font-bold text-lg mb-2">Online Examinations</h2><p class="text-sm text-gray-500 mb-6 max-w-md mx-auto">Take computer-based tests with timer, auto-save and automatic marking.</p>
+    <div class="space-y-3 max-w-sm mx-auto"><div class="border rounded-lg p-3 text-left text-sm"><div class="font-medium">Mathematics – Mid-Term Test</div><div class="text-xs text-gray-400">40 questions • 45 minutes • Available</div><button class="mt-2 text-school-teal text-xs font-semibold" onclick="toast('CBT engine is a prototype UI. Full version needs backend.')">Start Exam</button></div>
+    <div class="border rounded-lg p-3 text-left text-sm opacity-60"><div class="font-medium">Physics – Practice Quiz</div><div class="text-xs text-gray-400">Completed • Score: 78%</div></div></div></div></div>`;
+}
+
+function renderAnnouncements() {
+  return `<div><h1 class="text-xl font-bold mb-4">Announcements</h1><div class="space-y-3">${ANNOUNCEMENTS.map(a => `<div class="bg-white rounded-xl border p-4"><div class="flex justify-between items-start gap-2"><h3 class="font-semibold text-sm">${a.title}</h3><span class="text-[10px] bg-gray-100 px-2 py-0.5 rounded shrink-0">${a.category}</span></div><p class="text-sm text-gray-600 mt-2">${a.excerpt}</p><div class="text-xs text-gray-400 mt-2">${formatDate(a.date)}</div></div>`).join('')}</div></div>`;
+}
+
+function renderAchievements() {
+  return `<div><h1 class="text-xl font-bold mb-4">Achievements & Badges</h1><div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${BADGES.map(b => `<div class="bg-white rounded-xl border p-4 text-center ${b.earned?'':'opacity-40'}"><div class="text-3xl mb-2">${b.icon}</div><div class="text-sm font-medium">${b.name}</div><div class="text-[10px] mt-1 ${b.earned?'text-green-600':'text-gray-400'}">${b.earned?'Earned':'Locked'}</div></div>`).join('')}</div></div>`;
+}
+
+function renderFees() {
+  const f = SAMPLE_FEES; const total = f.items.reduce((s,i) => s + i.amount, 0);
+  return `<div><h1 class="text-xl font-bold mb-4">Fees & Payments</h1><div class="bg-white rounded-xl border p-4 mb-4"><div class="text-sm text-gray-500 mb-2">${f.term} • ${f.session}</div><div class="space-y-2">${f.items.map(i => `<div class="flex justify-between text-sm"><span>${i.name}</span><span class="font-medium">${formatCurrency(i.amount)}</span></div>`).join('')}<div class="border-t pt-2 flex justify-between font-bold"><span>Total</span><span>${formatCurrency(total)}</span></div></div></div>
+    <div class="grid grid-cols-2 gap-3 mb-4"><div class="stat-card p-3 text-center"><div class="text-lg font-bold text-green-600">${formatCurrency(f.paid)}</div><div class="text-xs">Paid</div></div><div class="stat-card p-3 text-center"><div class="text-lg font-bold text-amber-600">${formatCurrency(f.outstanding)}</div><div class="text-xs">Outstanding</div></div></div>
+    <p class="text-xs text-gray-400 mb-3">Due date: ${formatDate(f.dueDate)}</p>
+    <button onclick="toast('Payment gateway (Paystack/Flutterwave) ready for integration')" class="w-full py-3 bg-school-teal text-white rounded-xl font-semibold">Pay Outstanding Balance</button>
+    <button class="w-full mt-2 py-2 text-sm text-school-teal font-medium">Download Receipts</button></div>`;
+}
+
+function renderAttendance() {
+  return `<div><h1 class="text-xl font-bold mb-4">Attendance</h1><div class="bg-white rounded-xl border p-4 mb-4 text-center"><div class="text-3xl font-bold text-school-teal">96%</div><div class="text-sm text-gray-500">Overall this term</div></div>
+    <div class="bg-white rounded-xl border overflow-hidden"><div class="px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-500">Recent records (demo)</div>
+    ${['Mon 12 Jan – Present','Tue 13 Jan – Present','Wed 14 Jan – Present','Thu 15 Jan – Absent (Sick)','Fri 16 Jan – Present'].map(r => `<div class="px-4 py-2.5 text-sm border-t flex justify-between"><span>${r.split(' – ')[0]}</span><span class="${r.includes('Absent')?'text-red-600':'text-green-600'} font-medium">${r.split(' – ')[1]}</span></div>`).join('')}</div></div>`;
+}
+
+function renderMessages() {
+  return `<div><h1 class="text-xl font-bold mb-4">Parent–Teacher Messages</h1><p class="text-sm text-gray-500 mb-4">Secure in-app messaging. Phone numbers are never exposed.</p>
+    <div class="bg-white rounded-xl border p-4 space-y-3"><div class="border rounded-lg p-3"><div class="text-xs text-gray-400">Mr. Olumide Akinwale (Mathematics)</div><div class="text-sm mt-1">Please encourage Ibrahim to complete the additional practice questions.</div><div class="text-[10px] text-gray-400 mt-2">2 days ago</div></div>
+    <div class="border rounded-lg p-3 bg-teal-50/50"><div class="text-xs text-gray-400">You</div><div class="text-sm mt-1">Thank you. We will ensure he practices this weekend.</div></div></div>
+    <div class="mt-4 flex gap-2"><input type="text" placeholder="Type a message..." class="flex-1 border rounded-lg px-3 py-2 text-sm" /><button class="bg-school-teal text-white px-4 rounded-lg text-sm" onclick="toast('Message sent (demo)')">Send</button></div></div>`;
+}
+
+function renderCalendar() {
+  return `<div><h1 class="text-xl font-bold mb-4">School Calendar</h1><div class="space-y-2">${CALENDAR.map(e => `<div class="bg-white rounded-xl border p-3 flex gap-3 items-center"><div class="w-12 text-center shrink-0"><div class="text-xs text-gray-400">${new Date(e.date).toLocaleString('en',{month:'short'})}</div><div class="text-lg font-bold text-school-teal">${new Date(e.date).getDate()}</div></div><div><div class="font-medium text-sm">${e.title}</div><div class="text-xs text-gray-400 capitalize">${e.type}</div></div></div>`).join('')}</div></div>`;
+}
+
+document.addEventListener('DOMContentLoaded', () => { render(); });
+</script>
+</body>
+</html>
